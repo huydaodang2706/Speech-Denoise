@@ -1,0 +1,40 @@
+To supervise our silent interval detection (recall Sec. 3.3), we need ground-truth labels of silent
+intervals. To this end, we divide each clean speech signal into time segments, each of which lasts 1 / 30
+seconds. We label a time segment as silent when the total acoustic energy in that segment is below a
+threshold. Since the speech is clean, this automatic labeling process is robust.
+
+Training details. We use PyTorch platform to implement our speech denoising model, which is
+then trained with the Adam optimizer. In our end-to-end training without silent interval supervision
+(referred to as “Ours w/o SID loss” in Sec. 4; also recall Sec. 3.2), we run the Adam optimizer for
+50 epochs with a batch size of 20 and a learning rate of 0.001. When the silent interval supervision is
+incorporated (recall Sec. 3.3), we first train the silent interval detection component with the following
+setup: run the Adam optimizer for 100 epochs with a batch size of 15 and a learning rate of 0.001.
+Afterwards, we train the noise estimation and removal components using the same setup as the
+end-to-end training of “Ours w/o SID loss”.
+
+
+To supervise our silent interval detection, we label the clean audio signals in the following way. We
+first normalize each audio clip so that its magnitude is in the range [-1,1], that is, ensuring the largest
+waveform magnitude at -1 or 1. Then, the clean audio clip is divided into segments of length 1 / 30
+seconds. We label a time segment as a “silent” segment (i.e., label 0) if its average waveform energy
+in that segment is below 0.08. Otherwise, it is labeled as a “non-silent” segment (i.e., label 1).
+
+Our model is designed to take as input a mono-channel audio clip of an arbitrary length. However,
+when constructing the training dataset, we set each audio clip in the training dataset to have the
+same 2-second length, to enable batching at training time. To this end, we split each original audio
+clip from AVSPEECH, DEMAND, and AudioSet into 2-second long clips. All audio clips are then
+downsampled at 16kHz before converting into spectrograms using STFT. To perform STFT, the
+Fast Fourier Transform (FFT) size is set to 510, the Hann window size is set to 28ms, and the hop
+length is set to 11ms. As a result, each 2-second clip yields a (complex-valued) spectrogram with a
+resolution 256 × 178, where 256 is the number of frequency bins, and 178 is the temporal resolution.
+At inference time, our model can still accept audio clips with arbitrary length.
+Both our clean speech dataset and noise datasets are first split into training and test sets, so that no
+audio clips in training and testing are from the same original audio source—they are fully separate.
+
+(0, 60, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], '/home/huydd/NLP/ASR/SentenceSplit/Speech-Denoise/dataset/sos_1/sos_1_0000001.wav', 30)
+(1, 60, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], '/home/huydd/NLP/ASR/SentenceSplit/Speech-Denoise/dataset/sos_2/sos_2_0000001.wav', 30)
+(1, 90, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], '/home/huydd/NLP/ASR/SentenceSplit/Speech-Denoise/dataset/sos_2/sos_2_0000001.wav', 30)
+
+1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
+111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
+
