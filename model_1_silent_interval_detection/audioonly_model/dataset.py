@@ -256,7 +256,7 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
             if self.phase != PHASE_PREDICTION:
                 audio_raw = snd[int(item[1]/item[4]*sr):int((item[1]+self.clip_frames)/item[4]*sr)]
                 audio = audio_raw[:DATA_MAX_AUDIO_SAMPLES]
-                print("DATA_MAX_AU:",DATA_MAX_AUDIO_SAMPLES)
+                # print("DATA_MAX_AU:",DATA_MAX_AUDIO_SAMPLES)
                 diff = DATA_MAX_AUDIO_SAMPLES - len(audio)
                 if diff > 0:
                     audio = np.concatenate((audio, np.zeros(diff)))
