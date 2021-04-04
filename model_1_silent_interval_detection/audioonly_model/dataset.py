@@ -38,6 +38,7 @@ JSON_PARTIAL_NAME = '_TEDx1.json'
 DATA_REQUIRED_SR = 14000
 DATA_REQUIRED_FPS = 30.0
 DATA_MAX_AUDIO_SAMPLES = int(math.floor(CLIP_FRAMES / DATA_REQUIRED_FPS * DATA_REQUIRED_SR))
+# DATA_MAX_AUDIO_SAMPLES = 200
 NOISE_MAX_LENGTH_IN_SECOND = DATA_MAX_AUDIO_SAMPLES / DATA_REQUIRED_SR * 1.5  # times 1.5 to be safe
 
 SNRS = [-10, -7, -3, 0, 3, 7, 10]
@@ -212,6 +213,8 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
         try:
             # Get labels
             labels = torch.tensor(item[-1], dtype=torch.float32)
+            # For the purpose of training the times series of 176 (DATA_MAX_AUDIO_SAMPLES=28000)
+            labels = labels[0:176]
             # print('bit_stream:', item[2])
 
             # Get frames
@@ -253,6 +256,7 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
             if self.phase != PHASE_PREDICTION:
                 audio_raw = snd[int(item[1]/item[4]*sr):int((item[1]+self.clip_frames)/item[4]*sr)]
                 audio = audio_raw[:DATA_MAX_AUDIO_SAMPLES]
+                print("DATA_MAX_AU:",DATA_MAX_AUDIO_SAMPLES)
                 diff = DATA_MAX_AUDIO_SAMPLES - len(audio)
                 if diff > 0:
                     audio = np.concatenate((audio, np.zeros(diff)))
