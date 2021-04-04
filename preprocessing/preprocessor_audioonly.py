@@ -11,6 +11,7 @@ from joblib import Parallel, delayed
 from util import *
 from tools import *
 
+
 def process_audio(csv_path, output_dir, audio_id, output_json, ext=AUDIO_EXT, print_progress=True):
     """Process an audio file, or all the audio files with the same audio_id
     
@@ -33,7 +34,7 @@ def process_audio(csv_path, output_dir, audio_id, output_json, ext=AUDIO_EXT, pr
     df = pd.read_csv(csv_path, header=None)
     # print(df)
     df_todownload = df.loc[df.iloc[:, 0] == audio_id.split('/')[0]]
-    # print(df_todownload)
+    # print("\ndf_todownload:",df_todownload)
     num_videos = df_todownload.shape[0]
     if num_videos == 0:
         return -1
@@ -48,6 +49,7 @@ def process_audio(csv_path, output_dir, audio_id, output_json, ext=AUDIO_EXT, pr
     # whole_video_success = youtube_dl_full(audio_id, whole_video_path, FRAMERATE)
     whole_video_success = os.path.exists(whole_video_path)
     # print(whole_video_path, whole_video_success)
+    print("Path of video:",whole_video_path)
     if whole_video_success:
         count = 0
         success_count = 0
@@ -75,11 +77,16 @@ def process_audio(csv_path, output_dir, audio_id, output_json, ext=AUDIO_EXT, pr
             file_info[FIELDS[4]] = duration
             file_info[FIELDS[5]] = math.ceil(duration*FRAMERATE)
             file_info[FIELDS[6]] = '1' * file_info[FIELDS[5]]
+            # print("Fields [6]:", FIELDS[6]) // Bitstream fields
             file_info[FIELDS[7]] = 0
             file_info[FIELDS[8]] = 0
             file_info[FIELDS[9]] = None
             file_info[FIELDS[15]] = None
             file_info[FIELDS[14]] = path
+            
+            with open(whole_video_path + ".txt","r") as f:
+                srt = f.readlines()
+                file_info['label'] = srt[0]
 
             file_info_list.append(file_info)
             count += 1
@@ -175,10 +182,10 @@ if __name__ == "__main__":
     # SOS_JSON = os.path.join(DATA_ROOT, 'sounds_of_silence.json')
     # build_json_better(SOS_DIR, SOS_CSV, SOS_JSON)
 
-    DIR = '/home/huydd/NLP/ASR/SentenceSplit/Speech-Denoise/dataset'
-    CSV = '/home/huydd/NLP/ASR/SentenceSplit/Speech-Denoise/dataset/sounds_of_silence.csv'
+    DIR = '/home/huydd/NLP/ASR/SentenceSplit/Sp-Denoise/dataset'
+    CSV = '/home/huydd/NLP/ASR/SentenceSplit/Sp-Denoise/dataset/sounds_of_silence.csv'
     build_csv(DIR, CSV, ext='.wav')
-    JSON = '/home/huydd/NLP/ASR/SentenceSplit/Speech-Denoise/dataset/result/result.json'
+    JSON = '/home/huydd/NLP/ASR/SentenceSplit/Sp-Denoise/dataset/result/result.json'
     build_json_better(DIR, CSV, JSON, ext='.wav')
 
     # SNR = [-10, -7, -3, 0, 3, 7, 10]

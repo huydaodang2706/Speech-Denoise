@@ -71,7 +71,7 @@ def get_dataloader(phase, batch_size=4, num_workers=4, snr_idx=None, dataset_jso
 # datasets
 ##############################################################################
 class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
-    def __init__(self, phase, num_samples, clip_frames, consecutive_frames, snr_idx, dataset_json=None, clean_audio=True, n_fft=510, hop_length=158, win_length=400):
+    def __init__(self, phase, num_samples, clip_frames, consecutive_frames, snr_idx, dataset_json=None, clean_audio=True, n_fft=510, hop_length=160, win_length=400):
         print('========== DATASET CONSTRUCTION ==========')
         print('Initializing dataset...')
         super(AudioVisualAVSpeechMultipleVideoDataset, self).__init__()
@@ -91,9 +91,11 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
         print('Loading data...')
         with open(self.dataset_json, 'r') as fp:
             info = json.load(fp)
+            # print("Infor:",info)
         self.dataset_path = info['dataset_path']
         self.num_files = info['num_videos']
         self.files = info['files']
+        # print("Files:", info["files"])
         self.snr_idx = snr_idx
         # Set clean audio = False for test
         # print("Files:",self.files)
@@ -156,19 +158,19 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
         self.items = create_sample_list_from_indices(self.files, \
             clip_frames=self.clip_frames, \
             silent_consecutive_frames=self.consecutive_frames, \
-            random_seed=RANDOM_SEED)
+            random_seed=RANDOM_SEED,audio_length=2001)
         if phase == PHASE_TESTING:
             self.items = create_sample_list_from_indices(self.files, \
                 num_samples=len(self.items)//10, \
                 clip_frames=self.clip_frames, \
                 silent_consecutive_frames=self.consecutive_frames, \
-                random_seed=RANDOM_SEED)
+                random_seed=RANDOM_SEED,audio_length=2001)
         elif phase == PHASE_PREDICTION:
             self.items = create_sample_list_from_indices(self.files, clip_frames=self.clip_frames,\
                 silent_consecutive_frames=self.consecutive_frames, random_seed=RANDOM_SEED, pred=True)
         # print("Self.items:",self.items)
         self.num_samples = len(self.items)
-        print("Number of samples: items length:",self.num_samples)
+        # print("Number of samples: items length:",self.num_samples)
         # print("Items:",self.items)
         # self.num_samples = num_samples
 
@@ -205,11 +207,11 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
         # file_info_dict['bit_stream']
         if self.phase != PHASE_PREDICTION:
             assert item[1]+self.clip_frames <= int(file_info_dict['num_frames'])
-        print(index, item[1], file_info_dict['num_frames'])
+        # print(index, item[1], file_info_dict['num_frames'])
 
         try:
             # Get labels
-            labels = torch.tensor(item[2], dtype=torch.float32)
+            labels = torch.tensor(item[-1], dtype=torch.float32)
             # print('bit_stream:', item[2])
 
             # Get frames
@@ -241,7 +243,7 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
             # Get audio chunck
             # snd: audio time series, sr: sample rate
             snd, sr = librosa.load(item[3], sr=DATA_REQUIRED_SR)
-            print("snd shape:", snd.shape)
+            # print("snd shape:", snd.shape)
             # snd = librosa.util.normalize(snd)
             ### Normalize signal to be between -1 -> 1
             snd = audio_normalize(snd)
@@ -305,10 +307,10 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
 
             # stft
             # print('audio.shape3', audio.shape)
-            print("Audio origin shape:",audio.shape)
+            # print("Audio origin shape:",audio.shape)
             mixed_sig_stft = fast_stft(audio, n_fft=self.n_fft, hop_length=self.hop_length, win_length=self.win_length)
             mixed_sig_stft = torch.tensor(mixed_sig_stft.transpose((2, 0, 1)), dtype=torch.float32)
-            print("mixed_sig_stft",mixed_sig_stft.shape)
+            # print("mixed_sig_stft",mixed_sig_stft.shape)
             # # save images to visualize input
             # debug_out_more = os.path.join(DEBUG_OUT, str(snr))
             # ensure_dir(debug_out_more)
@@ -379,7 +381,7 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
 def test():
     print('In test')
     # dataloader = get_dataloader(PHASE_TRAINING, batch_size=1, num_workers=20, dataset_json="../dataset/result/result.json")
-    dataloader = get_dataloader(PHASE_TESTING, batch_size=2, num_workers=1,dataset_json="../dataset/result/result.json")
+    dataloader = get_dataloader(PHASE_TESTING, batch_size=2, num_workers=1,dataset_json="../../dataset/result/result.json")
     # dataloader = get_dataloader(PHASE_PREDICTION, batch_size=8, num_workers=0)
     for i, data in enumerate(dataloader):
         print('================================================================')

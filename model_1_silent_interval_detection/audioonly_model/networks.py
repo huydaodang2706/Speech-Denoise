@@ -129,13 +129,13 @@ class AudioVisualNet(nn.Module):
 
     def forward(self, s, v_num_frames=60):
         f_s = self.encoder_audio(s)
-        print("f_s.shape:",f_s.shape)
+        # print("f_s.shape:",f_s.shape)
         # Reshape tensor
         f_s = f_s.view(f_s.size(0), -1, f_s.size(3)) # (B, C1, T1)
-        print("f_s.shape:",f_s.shape)
+        # print("f_s.shape:",f_s.shape)
 
-        f_s = F.interpolate(f_s, size=v_num_frames) # (B, C2, T1)
-        print("f_s_inte.shape:",f_s.shape)
+        # f_s = F.interpolate(f_s, size=v_num_frames) # (B, C2, T1)
+        # print("f_s_inte.shape:",f_s.shape)
         
         # f_v = self.encoder_video(v)
         # f_v = torch.mean(f_v, dim=(-2, -1)) # (B, C2, T2)
@@ -149,17 +149,17 @@ class AudioVisualNet(nn.Module):
 
         # if self.training is True:
         #     self.lstm.flatten_parameters()
-        print("Conv.shape:",merge.shape)
+        # print("Conv.shape:",merge.shape)
 
         self.lstm.flatten_parameters()
         merge, _ = self.lstm(merge)
-        print("lstm.shape:",merge.shape)
+        # print("lstm.shape:",merge.shape)
 
         merge = merge.permute(1, 0, 2)# (B, T1, C1+C2)
-        print("permute.shape:",merge.shape)
+        # print("permute.shape:",merge.shape)
 
         merge = self.fc1(merge)
-        print("merge-shape: ", merge.shape )
+        # print("merge-shape: ", merge.shape )
         out = merge.squeeze(2)
         # print(merge.shape)
         # out = self.fc2(merge.view(merge.size(0), -1))

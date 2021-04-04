@@ -294,7 +294,7 @@ def filter_bitstream(bs, min_silent_interval):
     return gt_bs_fixed
 
 
-def bit_stream_indices_list(files, clip_frames, silent_consecutive_frames, random_seed=None, pred=False):
+def bit_stream_indices_list(files, clip_frames, silent_consecutive_frames, random_seed=None, pred=False, audio_length=None):
     """Create a list of truncated bit streams indices"""
     random.seed(random_seed)
     # bitstream_json_label = 'bit_stream_relabeled2'
@@ -325,7 +325,16 @@ def bit_stream_indices_list(files, clip_frames, silent_consecutive_frames, rando
                 # item[2]: data bit stream
                 # item[3]: audio_path
                 # item[4]: framerate
-                choice = (i, x, [int(x) for x in data_bits_labels], f['audio_path'], f['framerate'])
+                # item[5]: label for silence interval detection
+                label = json.loads(f['label'])
+                if audio_length is not None:
+                    for i in range(audio_length - 1999):
+                        label.append(0)
+                        # Append speech at the end
+                # print("Length of label ::::",len(label))
+                
+                # print("Length of f:",len(f))
+                choice = (i, x, [int(x) for x in data_bits_labels], f['audio_path'], f['framerate'], label)
                 lists.append(choice)
         else:
             choice = (i, idx1, [int(x) for x in cur_clip_bs], f['audio_path'], f['framerate'])
@@ -334,9 +343,9 @@ def bit_stream_indices_list(files, clip_frames, silent_consecutive_frames, rando
     return lists
 
 
-def create_sample_list_from_indices(files, num_samples=None, clip_frames=1, silent_consecutive_frames=1, random_seed=None, pred=False):
+def create_sample_list_from_indices(files, num_samples=None, clip_frames=1, silent_consecutive_frames=1, random_seed=None, pred=False,audio_length=None):
     """Create a list of samples from indices"""
-    all_choices = bit_stream_indices_list(files, clip_frames, silent_consecutive_frames, random_seed=random_seed, pred=pred)
+    all_choices = bit_stream_indices_list(files, clip_frames, silent_consecutive_frames, random_seed=random_seed, pred=pred, audio_length=audio_length)
     # each choice: tuple(file index, file's bitstream index, data bitstream, data center bit, bce weights)
     print('Total available samples: ', len(all_choices))
 

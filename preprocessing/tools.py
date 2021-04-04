@@ -23,7 +23,7 @@ PLOT_DPI = 100
 PLOT_CHUNKSIZE = 1e10
 
 FRAMERATE = 30
-AUDIO_SAMPLE_RATE = 44100
+AUDIO_SAMPLE_RATE = 16000
 
 FIELDS = ['path', 'framerate', 'audio_sample_rate', 'audio_samples', 'duration',\
     'num_frames', 'bit_stream', 'silence_total_ratio',\

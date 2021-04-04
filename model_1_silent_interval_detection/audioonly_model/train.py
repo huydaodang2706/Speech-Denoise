@@ -70,10 +70,13 @@ def main():
             pbar.set_description("EPOCH[{}][{}]".format(e, b))
             pbar.set_postfix(OrderedDict({k: v.item() for k, v in losses.items()}))
 
+            print("\nTrain Loss {}".format(losses))
             # validation step
             if clock.step % config.val_frequency == 0:
                 data = next(val_loader_step)
                 outputs, losses = tr_agent.val_func(data)
+                print("Val Loss {}".format(losses))
+
 
                 # visualize
                 # if args.vis and clock.step % config.visualize_frequency == 0:
@@ -83,6 +86,7 @@ def main():
 
         # save the best accuracy
         epoch_acc = tr_agent.evaluate(val_loader)
+        print("Epoch {} batch {} - accuracy {}".format(e,b,epoch_acc))
         if epoch_acc > max_epoch_acc:
             tr_agent.save_ckpt('best_acc')
             max_epoch_acc = epoch_acc
