@@ -162,7 +162,7 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
             random_seed=RANDOM_SEED,audio_length=301)
         if phase == PHASE_TESTING:
             self.items = create_sample_list_from_indices(self.files, \
-                num_samples=len(self.items)//10, \
+                # num_samples=len(self.items)//10, \
                 clip_frames=self.clip_frames, \
                 silent_consecutive_frames=self.consecutive_frames, \
                 random_seed=RANDOM_SEED,audio_length=301)
@@ -387,8 +387,8 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
 def test():
     print('In test')
     data_json_path='/home/huydd/NLP/ASR/SentenceSplit/Sp-Denoise/dataset/result/result.json'
-    dataloader = get_dataloader(PHASE_TRAINING, batch_size=1, num_workers=20, dataset_json=data_json_path)
-    # dataloader = get_dataloader(PHASE_TESTING, batch_size=2, num_workers=1,dataset_json=data_json_path)
+    # dataloader = get_dataloader(PHASE_TRAINING, batch_size=1, num_workers=20, dataset_json=data_json_path)
+    dataloader = get_dataloader(PHASE_TESTING, batch_size=2, num_workers=1,dataset_json=data_json_path)
     # dataloader = get_dataloader(PHASE_PREDICTION, batch_size=8, num_workers=0)
     for i, data in enumerate(dataloader):
         print('================================================================')
