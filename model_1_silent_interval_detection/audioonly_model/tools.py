@@ -328,7 +328,7 @@ def bit_stream_indices_list(files, clip_frames, silent_consecutive_frames, rando
                 # item[5]: label for silence interval detection
                 label = json.loads(f['label'])
                 if audio_length is not None:
-                    for i in range(audio_length - 1999):
+                    for i in range(audio_length - len(label)):
                         label.append(0)
                         # Append speech at the end
                 # print("Length of label ::::",len(label))

@@ -35,7 +35,7 @@ RANDOM_SEED = 10
 PRED_RANDOM_SEED = 100
 JSON_PARTIAL_NAME = '_TEDx1.json'
 
-DATA_REQUIRED_SR = 14000
+DATA_REQUIRED_SR = 16000
 DATA_REQUIRED_FPS = 30.0
 DATA_MAX_AUDIO_SAMPLES = int(math.floor(CLIP_FRAMES / DATA_REQUIRED_FPS * DATA_REQUIRED_SR))
 # DATA_MAX_AUDIO_SAMPLES = 200
@@ -159,13 +159,13 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
         self.items = create_sample_list_from_indices(self.files, \
             clip_frames=self.clip_frames, \
             silent_consecutive_frames=self.consecutive_frames, \
-            random_seed=RANDOM_SEED,audio_length=2001)
+            random_seed=RANDOM_SEED,audio_length=301)
         if phase == PHASE_TESTING:
             self.items = create_sample_list_from_indices(self.files, \
                 num_samples=len(self.items)//10, \
                 clip_frames=self.clip_frames, \
                 silent_consecutive_frames=self.consecutive_frames, \
-                random_seed=RANDOM_SEED,audio_length=2001)
+                random_seed=RANDOM_SEED,audio_length=301)
         elif phase == PHASE_PREDICTION:
             self.items = create_sample_list_from_indices(self.files, clip_frames=self.clip_frames,\
                 silent_consecutive_frames=self.consecutive_frames, random_seed=RANDOM_SEED, pred=True)
@@ -214,7 +214,9 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
             # Get labels
             labels = torch.tensor(item[-1], dtype=torch.float32)
             # For the purpose of training the times series of 176 (DATA_MAX_AUDIO_SAMPLES=28000)
-            labels = labels[0:176]
+            if self.phase != PHASE_PREDICTION: 
+                labels = labels[0:201]
+            
             # print('bit_stream:', item[2])
 
             # Get frames
@@ -256,7 +258,7 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
             if self.phase != PHASE_PREDICTION:
                 audio_raw = snd[int(item[1]/item[4]*sr):int((item[1]+self.clip_frames)/item[4]*sr)]
                 audio = audio_raw[:DATA_MAX_AUDIO_SAMPLES]
-                # print("DATA_MAX_AU:",DATA_MAX_AUDIO_SAMPLES)
+                print("DATA_MAX_AU:",DATA_MAX_AUDIO_SAMPLES)
                 diff = DATA_MAX_AUDIO_SAMPLES - len(audio)
                 if diff > 0:
                     audio = np.concatenate((audio, np.zeros(diff)))
@@ -314,7 +316,7 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
             # print("Audio origin shape:",audio.shape)
             mixed_sig_stft = fast_stft(audio, n_fft=self.n_fft, hop_length=self.hop_length, win_length=self.win_length)
             mixed_sig_stft = torch.tensor(mixed_sig_stft.transpose((2, 0, 1)), dtype=torch.float32)
-            # print("mixed_sig_stft",mixed_sig_stft.shape)
+            print("mixed_sig_stft",mixed_sig_stft.shape)
             # # save images to visualize input
             # debug_out_more = os.path.join(DEBUG_OUT, str(snr))
             # ensure_dir(debug_out_more)
@@ -384,8 +386,9 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
 
 def test():
     print('In test')
-    # dataloader = get_dataloader(PHASE_TRAINING, batch_size=1, num_workers=20, dataset_json="../dataset/result/result.json")
-    dataloader = get_dataloader(PHASE_TESTING, batch_size=2, num_workers=1,dataset_json="../../dataset/result/result.json")
+    data_json_path='/home/huydd/NLP/ASR/SentenceSplit/Sp-Denoise/dataset/result/result.json'
+    dataloader = get_dataloader(PHASE_TRAINING, batch_size=1, num_workers=20, dataset_json=data_json_path)
+    # dataloader = get_dataloader(PHASE_TESTING, batch_size=2, num_workers=1,dataset_json=data_json_path)
     # dataloader = get_dataloader(PHASE_PREDICTION, batch_size=8, num_workers=0)
     for i, data in enumerate(dataloader):
         print('================================================================')

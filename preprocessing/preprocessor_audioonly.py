@@ -12,7 +12,7 @@ from util import *
 from tools import *
 
 
-def process_audio(csv_path, output_dir, audio_id, output_json, ext=AUDIO_EXT, print_progress=True):
+def process_audio(label_path, csv_path, output_dir, audio_id, output_json, ext=AUDIO_EXT, print_progress=True):
     """Process an audio file, or all the audio files with the same audio_id
     
     Arguments:
@@ -43,7 +43,7 @@ def process_audio(csv_path, output_dir, audio_id, output_json, ext=AUDIO_EXT, pr
         ('num_videos', num_videos)
     ])
     file_info_list = []
-
+    print("Audio_id",audio_id)
     # download the whole video first
     whole_video_path = os.path.join(get_parent_dir(csv_path), audio_id + ext)
     # whole_video_success = youtube_dl_full(audio_id, whole_video_path, FRAMERATE)
@@ -84,7 +84,7 @@ def process_audio(csv_path, output_dir, audio_id, output_json, ext=AUDIO_EXT, pr
             file_info[FIELDS[15]] = None
             file_info[FIELDS[14]] = path
             
-            with open(whole_video_path + ".txt","r") as f:
+            with open(label_path + audio_id + ".txt","r") as f:
                 srt = f.readlines()
                 file_info['label'] = srt[0]
 
@@ -119,7 +119,7 @@ def process_audio(csv_path, output_dir, audio_id, output_json, ext=AUDIO_EXT, pr
         return num_videos
 
 
-def build_json_better(download_dataset_dir, download_dataset_csv, output_json, filenamewithouthext=None, ext=AUDIO_EXT, print_progress=True):
+def build_json_better(download_dataset_dir, label_path, download_dataset_csv, output_json, filenamewithouthext=None, ext=AUDIO_EXT, print_progress=True):
     """Build dataset json which contains detailed information about every audio file in the dataset
     
     Arguments:
@@ -147,13 +147,13 @@ def build_json_better(download_dataset_dir, download_dataset_csv, output_json, f
 
     if filenamewithouthext is None:
         res = Parallel(n_jobs=-1, backend="multiprocessing")(delayed(process_audio)
-                                                             (download_dataset_csv, os.path.join(download_dataset_dir, yid),
+                                                             (label_path, download_dataset_csv, os.path.join(download_dataset_dir, yid),
                                                               yid, os.path.join(download_dataset_dir, '{}.json'.format(yid)),
                                                               ext, print_progress) for yid in video_yids)
         total_failed += sum(res)
     else:
         res = Parallel(n_jobs=-1, backend="multiprocessing")(delayed(process_audio)
-                                                             (download_dataset_csv, os.path.join(download_dataset_dir, yid.split('/')[0]),
+                                                             (label_path, download_dataset_csv, os.path.join(download_dataset_dir, yid.split('/')[0]),
                                                               yid, os.path.join(download_dataset_dir, '{}.json'.format(yid.split('/')[0])),
                                                               ext, print_progress) for yid in video_yids)
         total_failed += sum(res)
@@ -182,11 +182,12 @@ if __name__ == "__main__":
     # SOS_JSON = os.path.join(DATA_ROOT, 'sounds_of_silence.json')
     # build_json_better(SOS_DIR, SOS_CSV, SOS_JSON)
 
-    DIR = '/home/huydd/NLP/ASR/SentenceSplit/Sp-Denoise/dataset'
-    CSV = '/home/huydd/NLP/ASR/SentenceSplit/Sp-Denoise/dataset/sounds_of_silence.csv'
+    DIR = '/home/huydd/NLP/ASR/SentenceSplit/Sp-Denoise/dataset/data'
+    CSV = '/home/huydd/NLP/ASR/SentenceSplit/Sp-Denoise/dataset/data/sounds_of_silence.csv'
+    LABEL_PATH= '/home/huydd/NLP/ASR/SentenceSplit/Sp-Denoise/dataset/label/'
     build_csv(DIR, CSV, ext='.wav')
     JSON = '/home/huydd/NLP/ASR/SentenceSplit/Sp-Denoise/dataset/result/result.json'
-    build_json_better(DIR, CSV, JSON, ext='.wav')
+    build_json_better(DIR,LABEL_PATH, CSV, JSON, ext='.wav')
 
     # SNR = [-10, -7, -3, 0, 3, 7, 10]
     # for snr in tqdm(SNR):

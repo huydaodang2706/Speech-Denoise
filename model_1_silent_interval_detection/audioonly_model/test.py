@@ -6,7 +6,8 @@ import tools
 import torch 
 import networks
 from pydub import AudioSegment
-filepath = '/home/huydd/NLP/ASR/SentenceSplit/Sp-Denoise/dataset/csty1.wav'
+# filepath = '/home/huydd/NLP/ASR/SentenceSplit/Sp-Denoise/result/csty1.wav'
+filepath = '/home/huydd/NLP/ASR/SentenceSplit/py-webrtcvad/data/Silence/tets/silence1min.wav'
 snd, sr = librosa.load(filepath,sr=16000)
 # snd = librosa.to_mono(snd)
 mixed_sig_stft = transform.fast_stft(snd, n_fft=510, hop_length=160, win_length=400)
