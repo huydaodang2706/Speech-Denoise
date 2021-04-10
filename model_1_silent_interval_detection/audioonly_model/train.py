@@ -3,7 +3,7 @@ import os
 from collections import OrderedDict
 
 from tqdm import tqdm
-
+from torch.utils.tensorboard import SummaryWriter
 from agent import get_agent
 from common import PHASE_TESTING, PHASE_TRAINING, get_config
 from dataset import get_dataloader
@@ -46,6 +46,7 @@ def main():
     if args.cont:
         tr_agent.load_ckpt(args.ckpt)
 
+    writer = SummaryWriter()
     # create dataloader
     train_loader = get_dataloader(PHASE_TRAINING, batch_size=config.batch_size, num_workers=2, dataset_json="../dataset/result/result.json")
     val_loader = get_dataloader(PHASE_TESTING, batch_size=config.batch_size, num_workers=config.num_workers, dataset_json="../dataset/result/evaluate.json")
@@ -61,21 +62,21 @@ def main():
         pbar = tqdm(train_loader)
         for b, data in enumerate(pbar):
             # train step
-            outputs, losses = tr_agent.train_func(data)
+            outputs, train_losses = tr_agent.train_func(data)
 
             # visualize
             # if args.vis and clock.step % config.visualize_frequency == 0:
             #     tr_agent.visualize_batch(data, "train", outputs)
 
             pbar.set_description("EPOCH[{}][{}]".format(e, b))
-            pbar.set_postfix(OrderedDict({k: v.item() for k, v in losses.items()}))
+            pbar.set_postfix(OrderedDict({k: v.item() for k, v in train_losses.items()}))
 
-            print("\nTrain Loss {}".format(losses))
+            # print("\nTrain Loss {}".format(train_losses))
             # validation step
             if clock.step % config.val_frequency == 0:
                 data = next(val_loader_step)
                 outputs, losses = tr_agent.val_func(data)
-                print("Val Loss {}".format(losses))
+                # print("Val Loss {}".format(losses))
 
 
                 # visualize
@@ -84,9 +85,13 @@ def main():
 
             clock.tick()
 
+        print("\nResult Epoch {} Train Loss {} ".format(e, train_losses))
+        writer.add_scalar('Loss/train',train_losses, e)
         # save the best accuracy
         epoch_acc = tr_agent.evaluate(val_loader)
-        print("Epoch {} batch {} - accuracy {}".format(e,b,epoch_acc))
+        print("Epoch {} - accuracy {}".format(e, epoch_acc))
+        writer.add_scalar('Val accuracy',epoch_acc, e)
+
         if epoch_acc > max_epoch_acc:
             tr_agent.save_ckpt('best_acc')
             max_epoch_acc = epoch_acc
@@ -97,6 +102,8 @@ def main():
         if clock.epoch % config.save_frequency == 0:
             tr_agent.save_ckpt()
         tr_agent.save_ckpt('latest')
+    
+    writer.close()
 
 
 if __name__ == '__main__':

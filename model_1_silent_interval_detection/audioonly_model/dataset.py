@@ -258,7 +258,7 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
             if self.phase != PHASE_PREDICTION:
                 audio_raw = snd[int(item[1]/item[4]*sr):int((item[1]+self.clip_frames)/item[4]*sr)]
                 audio = audio_raw[:DATA_MAX_AUDIO_SAMPLES]
-                print("DATA_MAX_AU:",DATA_MAX_AUDIO_SAMPLES)
+                # print("DATA_MAX_AU:",DATA_MAX_AUDIO_SAMPLES)
                 diff = DATA_MAX_AUDIO_SAMPLES - len(audio)
                 if diff > 0:
                     audio = np.concatenate((audio, np.zeros(diff)))
@@ -316,7 +316,7 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
             # print("Audio origin shape:",audio.shape)
             mixed_sig_stft = fast_stft(audio, n_fft=self.n_fft, hop_length=self.hop_length, win_length=self.win_length)
             mixed_sig_stft = torch.tensor(mixed_sig_stft.transpose((2, 0, 1)), dtype=torch.float32)
-            print("mixed_sig_stft",mixed_sig_stft.shape)
+            # print("mixed_sig_stft",mixed_sig_stft.shape)
             # # save images to visualize input
             # debug_out_more = os.path.join(DEBUG_OUT, str(snr))
             # ensure_dir(debug_out_more)
