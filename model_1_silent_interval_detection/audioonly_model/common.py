@@ -52,7 +52,7 @@ class Config(object):
         self.set_network_info()
 
         # training configuration
-        self.nr_epochs = 100
+        self.nr_epochs = 40
         self.batch_size = 15    # GPU memory usage
         self.num_workers = 60 #32 #multiprocessing.cpu_count()    # RAM usage
         self.lr = 1e-3 #1e-4

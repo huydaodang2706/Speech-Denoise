@@ -86,7 +86,7 @@ def main():
             clock.tick()
 
         print("\nResult Epoch {} Train Loss {} ".format(e, train_losses))
-        writer.add_scalar('Loss/train',train_losses, e)
+        writer.add_scalar('Loss/train',train_losses['bce'], e)
         # save the best accuracy
         epoch_acc = tr_agent.evaluate(val_loader)
         print("Epoch {} - accuracy {}".format(e, epoch_acc))
