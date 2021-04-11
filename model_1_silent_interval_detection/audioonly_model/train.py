@@ -58,12 +58,19 @@ def main():
     clock = tr_agent.clock
     max_epoch_acc = 0
     for e in range(clock.epoch, config.nr_epochs):
+        n = 0
         # begin iteration
         pbar = tqdm(train_loader)
         for b, data in enumerate(pbar):
             # train step
+            n += 1
             outputs, train_losses = tr_agent.train_func(data)
-
+            
+            if n==1:
+                train_losses_sum = train_losses['bce']
+            else:
+                train_losses_sum += train_losses['bce']
+            
             # visualize
             # if args.vis and clock.step % config.visualize_frequency == 0:
             #     tr_agent.visualize_batch(data, "train", outputs)
@@ -84,9 +91,9 @@ def main():
                 #     tr_agent.visualize_batch(data, "validation", outputs)
 
             clock.tick()
-
-        print("\nResult Epoch {} Train Loss {} ".format(e, train_losses))
-        writer.add_scalar('Loss/train',train_losses['bce'], e)
+        train_losses_sum =  train_losses_sum / (n*config.batch_size)
+        print("\nResult Epoch {} Train Loss {} ".format(e, train_losses_sum))
+        writer.add_scalar('Loss/train',train_losses_sum, e)
         # save the best accuracy
         epoch_acc = tr_agent.evaluate(val_loader)
         print("Epoch {} - accuracy {}".format(e, epoch_acc))

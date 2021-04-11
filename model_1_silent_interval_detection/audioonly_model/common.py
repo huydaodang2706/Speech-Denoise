@@ -7,7 +7,7 @@ import torch
 import utils
 
 
-PROJECT_ROOT = "../"
+PROJECT_ROOT = "./"
 OUTPUT_ROOT = os.path.join(PROJECT_ROOT, "model_output")
 EXPERIMENT_NAME = os.path.basename(os.getcwd())
 EXPERIMENT_DIR = os.path.join(OUTPUT_ROOT, EXPERIMENT_NAME)
@@ -52,7 +52,7 @@ class Config(object):
         self.set_network_info()
 
         # training configuration
-        self.nr_epochs = 40
+        self.nr_epochs = 30
         self.batch_size = 15    # GPU memory usage
         self.num_workers = 60 #32 #multiprocessing.cpu_count()    # RAM usage
         self.lr = 1e-3 #1e-4
