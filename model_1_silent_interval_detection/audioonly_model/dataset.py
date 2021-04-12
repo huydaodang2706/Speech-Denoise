@@ -256,8 +256,11 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
             # Do cut down to 28000 (DATA_MAX_AUDIO_SAMPLES) if not prediction
             # get corresponding audio chunk
             if self.phase != PHASE_PREDICTION:
-                audio_raw = snd[int(item[1]/item[4]*sr):int((item[1]+self.clip_frames)/item[4]*sr)]
-                audio = audio_raw[:DATA_MAX_AUDIO_SAMPLES]
+                # audio_raw = snd[int(item[1]/item[4]*sr):int((item[1]+self.clip_frames)/item[4]*sr)]
+                # print("item[1]{} item[2]{}".format(item[1],item[4]))
+                # print("Item_ begin this:",int(item[1]/item[4]*sr))
+                # print("Item_ end this:",int((item[1]+self.clip_frames)/item[4]*sr))
+                audio = snd[:DATA_MAX_AUDIO_SAMPLES]
                 # print("DATA_MAX_AU:",DATA_MAX_AUDIO_SAMPLES)
                 diff = DATA_MAX_AUDIO_SAMPLES - len(audio)
                 if diff > 0:

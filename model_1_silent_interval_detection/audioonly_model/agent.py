@@ -169,10 +169,10 @@ class MyAgent(BaseAgent):
         # net.eval()
         # set_requires_grad(net, False)
         # set_requires_grad(net.my_logits, True)
-        if torch.cuda.device_count() > 1:
-            print('Multi-GPUs available')
-            net = nn.DataParallel(net.cuda())   # For multi-GPU
-        elif torch.cuda.device_count() == 1:
+        # if torch.cuda.device_count() > 1:
+        #     print('Multi-GPUs available')
+        #     net = nn.DataParallel(net.cuda())   # For multi-GPU
+        if torch.cuda.device_count() == 1:
             print('Single-GPU available')
             net = net.cuda()    # For single-GPU
         else:
