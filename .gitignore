@@ -175,3 +175,4 @@ model_2_audio_denoising/
 assets/
 memo.txt
 model_1_silent_interval_detection/model_output/
+exp/

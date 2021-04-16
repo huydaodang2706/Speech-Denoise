@@ -8,6 +8,7 @@ import torch
 from networks import get_network
 from tools import *
 from utils import ensure_dir, get_parent_dir
+from transform import *
 from common import (EXPERIMENT_DIR, PHASE_PREDICTION, PHASE_TESTING,
                     PHASE_TRAINING, get_config)
 
@@ -37,10 +38,10 @@ def main():
 
     net.load_state_dict(torch.load(load_path)['model_state_dict'])
 
-    if torch.cuda.device_count() > 1:
-        print('For multi-GPU')
-        net = nn.DataParallel(net.cuda())   # For multi-GPU
-    elif torch.cuda.device_count() == 1:
+    # if torch.cuda.device_count() > 1:
+    #     print('For multi-GPU')
+    #     net = nn.DataParallel(net.cuda())   # For multi-GPU
+    if torch.cuda.device_count() == 1:
         print('For single-GPU')
         net = net.cuda()    # For single-GPU
     else:
@@ -49,12 +50,31 @@ def main():
     net.eval()
 
 
-
+ 
 
     for file in os.listdir(args.audio_dir):
         if file.endswith('.wav'):
             filepath = os.path.join(args.audio_dir, file)
             print("file_path:",filepath)
+            audio, sr = librosa.load(filepath, sr=DATA_REQUIRED_SR)
+            print('Sample rate:',sr)
+            mixed_sig_stft = fast_stft(audio, n_fft=510, hop_length=160, win_length=400)
+            mixed_sig_stft = torch.tensor(mixed_sig_stft.transpose((2,0,1)),dtype=torch.float32)
+            audio_input = mixed_sig_stft.unsqueeze(0)
+            print("Audio_input:",audio_input.shape)
+            
+            # output = net(audio_input.cuda())
+            output=net(audio_input)
+            pred_labels = (torch.sigmoid(output).detach().cpu().numpy() >= SIGMOID_THRESHOLD).astype(np.float32)
+            
+            # print("Output:",pred_labels[0,0:400])
+            print("Non-zero:", np.count_nonzero(pred_labels[0]) )
+            f = open(filepath + '.txt','w')
+            f.write(str(pred_labels))
+            f.close()
+
+if __name__ == '__main__':
+    main()
             
             
 

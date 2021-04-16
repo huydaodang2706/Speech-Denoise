@@ -182,11 +182,11 @@ if __name__ == "__main__":
     # SOS_JSON = os.path.join(DATA_ROOT, 'sounds_of_silence.json')
     # build_json_better(SOS_DIR, SOS_CSV, SOS_JSON)
 
-    DIR = '/home/huydd/NLP/ASR/SentenceSplit/Sp-Denoise/dataset/data'
-    CSV = '/home/huydd/NLP/ASR/SentenceSplit/Sp-Denoise/dataset/data/sounds_of_silence.csv'
-    LABEL_PATH= '/home/huydd/NLP/ASR/SentenceSplit/Sp-Denoise/dataset/label/'
+    DIR = '/home/huydd/other_done'
+    CSV = '/home/huydd/other_done/sounds_of_silence.csv'
+    LABEL_PATH= '/home/huydd/data_3s_label/'
     build_csv(DIR, CSV, ext='.wav')
-    JSON = '/home/huydd/NLP/ASR/SentenceSplit/Sp-Denoise/dataset/result/result.json'
+    JSON = '/home/huydd/other_done/result_json/result.json'
     build_json_better(DIR,LABEL_PATH, CSV, JSON, ext='.wav')
 
     # SNR = [-10, -7, -3, 0, 3, 7, 10]

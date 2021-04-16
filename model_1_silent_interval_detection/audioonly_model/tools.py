@@ -330,7 +330,7 @@ def bit_stream_indices_list(files, clip_frames, silent_consecutive_frames, rando
                 if audio_length is not None:
                     for i in range(audio_length - len(label)):
                         label.append(0)
-                        # Append speech at the end
+                        # Append silence at the end
                 # print("Length of label ::::",len(label))
                 
                 # print("Length of f:",len(f))

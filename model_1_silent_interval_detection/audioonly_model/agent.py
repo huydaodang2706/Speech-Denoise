@@ -241,8 +241,8 @@ class MyAgent(BaseAgent):
                 # print('acc:', acc)
                 epoch_acc.update(acc)
 
-        self.val_tb.add_scalar("epoch_loss", metrics.avg, global_step=self.clock.epoch)
-        self.val_tb.add_scalar("epoch_acc", epoch_acc.avg, global_step=self.clock.epoch)
+        # self.val_tb.add_scalar("epoch_loss", metrics.avg, global_step=self.clock.epoch)
+        # self.val_tb.add_scalar("epoch_acc", epoch_acc.avg, global_step=self.clock.epoch)
 
         return epoch_acc.avg
 

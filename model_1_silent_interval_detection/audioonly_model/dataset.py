@@ -72,7 +72,7 @@ def get_dataloader(phase, batch_size=4, num_workers=4, snr_idx=None, dataset_jso
 # datasets
 ##############################################################################
 class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
-    def __init__(self, phase, num_samples, clip_frames, consecutive_frames, snr_idx, dataset_json=None, clean_audio=True, n_fft=510, hop_length=160, win_length=400):
+    def __init__(self, phase, num_samples, clip_frames, consecutive_frames, snr_idx, dataset_json=None, clean_audio=False, n_fft=510, hop_length=160, win_length=400):
         print('========== DATASET CONSTRUCTION ==========')
         print('Initializing dataset...')
         super(AudioVisualAVSpeechMultipleVideoDataset, self).__init__()
@@ -101,57 +101,7 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
         # Set clean audio = False for test
         # print("Files:",self.files)
        
-        if clean_audio:
-            # self.snrs = [0, 5, 10, 15]
-            # if phase != PHASE_TRAINING:
-            #     self.snrs = [2.5, 7.5, 12.5, 17.5]
-            # self.snrs = [-20, -17, -13, -10, -7, -3, 0, 3, 7, 10]
-            self.snrs = SNRS
-            print("SNRs:", self.snrs)
-            self.snr_idx = snr_idx
-            print("snr_idx:", self.snr_idx)
-
-            print('Getting all noise files...')
-            # self.sr = 14000
-            # self.fps = 30.0
-            # self.max_audio_samples = int(math.floor(self.clip_frames / self.fps * self.sr))
-            self.noise_src = [f.resolve() for f in Path(NOISE_SRC_ROOT_TRAIN).rglob('*.wav')]\
-                + [f.resolve() for f in Path(AUDIOSET_NOISE_SRC_TRAIN).rglob('*.wav')]
-            if phase != PHASE_TRAINING:
-                self.noise_src = [f.resolve() for f in Path(NOISE_SRC_ROOT_TEST).rglob('*.wav')]\
-                    + [f.resolve() for f in Path(AUDIOSET_NOISE_SRC_EVAL).rglob('*.wav')]
-            # elif phase == PHASE_PREDICTION:
-            #     self.noise_src = [f.resolve() for f in Path(NOISE_SRC_ROOT_TEST).rglob('*.wav')]
-                # self.noise_src = sorted([f.resolve() for f in Path(get_parent_dir(self.dataset_json)).rglob('*_noise.wav')])
-            # print(len(self.noise_src))
-            # print(self.noise_src)
-
-            print('Loading all noise files...')
-            # self.noises = [i[0] for i in (librosa.load(n, sr=DATA_REQUIRED_SR) for n in tqdm(self.noise_src))]
-            self.noises = Parallel(n_jobs=-1, backend="multiprocessing")\
-                (delayed(load_wav)(n, sr=DATA_REQUIRED_SR) for n in tqdm(self.noise_src))
-            # print(len(self.noises))
-            self.noise_dict = {}
-            if phase == PHASE_PREDICTION:
-                random.seed(PRED_RANDOM_SEED)
-                for f_idx, file in enumerate(self.files):
-                    # selected_noise = random.choice(self.noises)
-                    selected_noise = random_select_noises_for_pred(file, self.noises)
-                    # selected_noise = self.noises[f_idx]
-                    # print(os.path.basename(self.noise_src[f_idx]))
-                    # print(os.path.basename(file['path']))
-                    # # for now, noise and audio have to match
-                    # assert get_basename_no_ext(file['path']) in get_basename_no_ext(self.noise_src[f_idx])
-
-                    start = random.randint(0, len(selected_noise) - int(math.ceil(file['duration'])*DATA_REQUIRED_SR))
-                    selected_noise_cropped = selected_noise[start:start+int(math.ceil(file['duration'])*DATA_REQUIRED_SR)]
-                    # selected_noise_cropped = selected_noise
-                    if self.snr_idx is None:
-                        snr = random.choice(self.snrs)
-                    else:
-                        snr = self.snrs[self.snr_idx]
-                    self.noise_dict[f_idx] = (selected_noise_cropped, snr)
-
+        
         print('Generating data items...')
         # list of tuples (video_index, start_frame, bit_stream, center_label)
         # [(0, 450, '000011111111111', 1.0), ..., (79, 18349, '000111100000000', 0.0)]
@@ -159,13 +109,13 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
         self.items = create_sample_list_from_indices(self.files, \
             clip_frames=self.clip_frames, \
             silent_consecutive_frames=self.consecutive_frames, \
-            random_seed=RANDOM_SEED,audio_length=301)
+            random_seed=RANDOM_SEED,audio_length=601)
         if phase == PHASE_TESTING:
             self.items = create_sample_list_from_indices(self.files, \
                 # num_samples=len(self.items)//10, \
                 clip_frames=self.clip_frames, \
                 silent_consecutive_frames=self.consecutive_frames, \
-                random_seed=RANDOM_SEED,audio_length=301)
+                random_seed=RANDOM_SEED,audio_length=601)
         elif phase == PHASE_PREDICTION:
             self.items = create_sample_list_from_indices(self.files, clip_frames=self.clip_frames,\
                 silent_consecutive_frames=self.consecutive_frames, random_seed=RANDOM_SEED, pred=True)
@@ -255,65 +205,29 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
 
             # Do cut down to 28000 (DATA_MAX_AUDIO_SAMPLES) if not prediction
             # get corresponding audio chunk
-            if self.phase != PHASE_PREDICTION:
-                # audio_raw = snd[int(item[1]/item[4]*sr):int((item[1]+self.clip_frames)/item[4]*sr)]
-                # print("item[1]{} item[2]{}".format(item[1],item[4]))
-                # print("Item_ begin this:",int(item[1]/item[4]*sr))
-                # print("Item_ end this:",int((item[1]+self.clip_frames)/item[4]*sr))
-                audio = snd[:DATA_MAX_AUDIO_SAMPLES]
-                # print("DATA_MAX_AU:",DATA_MAX_AUDIO_SAMPLES)
-                diff = DATA_MAX_AUDIO_SAMPLES - len(audio)
-                if diff > 0:
-                    audio = np.concatenate((audio, np.zeros(diff)))
-            else:
-                audio = snd
+            
+            # if self.phase != PHASE_PREDICTION:
+            #     # audio_raw = snd[int(item[1]/item[4]*sr):int((item[1]+self.clip_frames)/item[4]*sr)]
+            #     # print("item[1]{} item[2]{}".format(item[1],item[4]))
+            #     # print("Item_ begin this:",int(item[1]/item[4]*sr))
+            #     # print("Item_ end this:",int((item[1]+self.clip_frames)/item[4]*sr))
+            #     audio = snd[:DATA_MAX_AUDIO_SAMPLES]
+            #     # print("DATA_MAX_AU:",DATA_MAX_AUDIO_SAMPLES)
+            #     diff = DATA_MAX_AUDIO_SAMPLES - len(audio)
+            #     if diff > 0:
+            #         audio = np.concatenate((audio, np.zeros(diff)))
+            # else:
+            #     audio = snd
+            audio = snd
             # audio = torch.tensor(audio, dtype=torch.float32).unsqueeze(0)
             # print('audio.shape1', audio.shape)
 
             # enforce silent intervals to be truly silent (clean_sig)
             # if self.phase != PHASE_PREDICTION:
-            if self.clean_audio:
-                mask = convert_bitstreammask_to_audiomask(audio, float(sr)/item[4], item[2])
-                audio = audio * (1 - mask)
             # print('audio.shape2', audio.shape)
 
             # add noise to audio
-            if self.clean_audio:
-                if self.phase == PHASE_PREDICTION:
-                    snr = self.noise_dict[item[0]][1]
-                    noise = self.noise_dict[item[0]][0]
-                    audio_mixed, audio_clean, _ = add_noise_to_audio(audio, noise, snr=snr, start_pos=int(item[1]/item[4]*sr), norm=0.5)
-                    # raise NotImplementedError
-                else:
-                    if self.snr_idx is None:
-                        snr = random.choice(self.snrs)
-                    else:
-                        snr = self.snrs[self.snr_idx]
-                    noise = random.choice(self.noises)
-                    # # start_time = time.time()
-                    # noise_path, offset = random_select_data_as_noise(item, self.files, safe_len=NOISE_MAX_LENGTH_IN_SECOND)
-                    # # print('noise_path:', noise_path)
-                    # # print('offset:', offset)
-                    # noise, _ = librosa.load(noise_path, sr=sr, duration=NOISE_MAX_LENGTH_IN_SECOND, offset=offset)
-                    # # print('noise.shape', noise.shape)
-                    # if len(noise) < DATA_MAX_AUDIO_SAMPLES:
-                    #     print('len(noise):', len(noise))
-                    #     print('len(noise) in sec:', len(noise)/sr)
-                    #     print('desired len:', DATA_MAX_AUDIO_SAMPLES)
-                    #     raise ValueError
-                    # # print("--- %s seconds in getitem ---" % (time.time() - start_time))
-                    audio_mixed, audio_clean, audio_noise = add_noise_to_audio(audio, noise, snr=snr, norm=0.5)
-
-                # # audio_mixed = librosa.util.normalize(audio_mixed)
-                # audio = torch.tensor(audio_mixed, dtype=torch.float32).unsqueeze(0)
-                audio = audio_mixed
-            else:
-                # # audio_mixed = librosa.util.normalize(audio)
-                # # scale = np.max(np.abs(audio_mixed)) / 0.5
-                # # audio = torch.tensor(audio_mixed/scale, dtype=torch.float32).unsqueeze(0)
-                # audio = torch.tensor(audio, dtype=torch.float32).unsqueeze(0)
-                pass
-
+            
             # stft
             # print('audio.shape3', audio.shape)
             # print("Audio origin shape:",audio.shape)
