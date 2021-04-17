@@ -164,8 +164,8 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
             # Get labels
             labels = torch.tensor(item[-1], dtype=torch.float32)
             # For the purpose of training the times series of 176 (DATA_MAX_AUDIO_SAMPLES=28000)
-            if self.phase != PHASE_PREDICTION: 
-                labels = labels[0:201]
+            #if self.phase != PHASE_PREDICTION: 
+            #    labels = labels[0:201]
             
             # print('bit_stream:', item[2])
 

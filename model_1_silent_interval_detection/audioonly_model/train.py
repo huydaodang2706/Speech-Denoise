@@ -48,9 +48,9 @@ def main():
 
     writer = SummaryWriter()
     # create dataloader
-    train_loader = get_dataloader(PHASE_TRAINING, batch_size=config.batch_size, num_workers=2, dataset_json="/home/huydd/train_noise/result_json/result.json")
-    val_loader = get_dataloader(PHASE_TESTING, batch_size=config.batch_size, num_workers=config.num_workers, dataset_json="/home/huydd/val_noise/result_json/result.json")
-    val_loader_step = get_dataloader(PHASE_TESTING, batch_size=config.batch_size, num_workers=config.num_workers, dataset_json="/home/huydd/val_noise/result_json/result.json")
+    train_loader = get_dataloader(PHASE_TRAINING, batch_size=config.batch_size, num_workers=2, dataset_json="/opt/hdd2/huydd/data_with_noise/train_data/result_json/train.json")
+    val_loader = get_dataloader(PHASE_TESTING, batch_size=config.batch_size, num_workers=config.num_workers, dataset_json="/opt/hdd2/huydd/data_with_noise/val_data/result_json/val.json")
+    val_loader_step = get_dataloader(PHASE_TESTING, batch_size=config.batch_size, num_workers=config.num_workers, dataset_json="/opt/hdd2/huydd/data_with_noise/val_data/result_json/val.json")
     val_loader_step = cycle(val_loader_step)
     # val_loader = cycle(val_loader)
 

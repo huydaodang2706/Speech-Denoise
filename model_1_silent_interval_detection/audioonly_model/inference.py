@@ -57,7 +57,10 @@ def main():
             filepath = os.path.join(args.audio_dir, file)
             print("file_path:",filepath)
             audio, sr = librosa.load(filepath, sr=DATA_REQUIRED_SR)
+            
+            audio = audio_normalize(audio)
             print('Sample rate:',sr)
+            
             mixed_sig_stft = fast_stft(audio, n_fft=510, hop_length=160, win_length=400)
             mixed_sig_stft = torch.tensor(mixed_sig_stft.transpose((2,0,1)),dtype=torch.float32)
             audio_input = mixed_sig_stft.unsqueeze(0)
