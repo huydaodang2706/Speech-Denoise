@@ -156,8 +156,8 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
         # file_info_dict['path']
         # file_info_dict['num_frames']
         # file_info_dict['bit_stream']
-        if self.phase != PHASE_PREDICTION:
-            assert item[1]+self.clip_frames <= int(file_info_dict['num_frames'])
+        # if self.phase != PHASE_PREDICTION:
+        #     assert item[1]+self.clip_frames <= int(file_info_dict['num_frames'])
         # print(index, item[1], file_info_dict['num_frames'])
 
         try:
@@ -303,9 +303,9 @@ class AudioVisualAVSpeechMultipleVideoDataset(Dataset):
 
 def test():
     print('In test')
-    data_json_path='/home/huydd/NLP/ASR/SentenceSplit/Sp-Denoise/dataset/result/result.json'
+    data_json_path='/home3/huydd/huydd/data_with_noise/val_data/result_json/val.json'
     # dataloader = get_dataloader(PHASE_TRAINING, batch_size=1, num_workers=20, dataset_json=data_json_path)
-    dataloader = get_dataloader(PHASE_TESTING, batch_size=2, num_workers=1,dataset_json=data_json_path)
+    dataloader = get_dataloader(PHASE_TESTING, batch_size=1, num_workers=1,dataset_json=data_json_path)
     # dataloader = get_dataloader(PHASE_PREDICTION, batch_size=8, num_workers=0)
     for i, data in enumerate(dataloader):
         print('================================================================')
