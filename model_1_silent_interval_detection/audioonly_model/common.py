@@ -9,7 +9,9 @@ import utils
 
 PROJECT_ROOT = "./"
 OUTPUT_ROOT = os.path.join(PROJECT_ROOT, "model_output")
-EXPERIMENT_NAME = os.path.basename(os.getcwd())
+EXPERIMENT_NAME = 'huydd'
+# EXPERIMENT_NAME = os.path.basename(os.getcwd())
+
 # EXPERIMENT_NAME = 'Speech-Denoise/model'
 
 EXPERIMENT_DIR = os.path.join(OUTPUT_ROOT, EXPERIMENT_NAME)
@@ -55,8 +57,8 @@ class Config(object):
 
         # training configuration
         self.nr_epochs = 60
-        self.batch_size = 6    # GPU memory usage
-        self.num_workers = 60 #32 #multiprocessing.cpu_count()    # RAM usage
+        self.batch_size = 1    # GPU memory usage
+        self.num_workers = 4 #32 #multiprocessing.cpu_count()    # RAM usage
         self.lr = 1e-3 #1e-4
         self.lr_step_size = 15
         self.lr_decay = 0.999
